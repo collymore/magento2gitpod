@@ -77,3 +77,4 @@ atlassian*
 pub/media
 pub/errors
 %BLACKFIRE_LOG_FILE%
+dump.rdb
