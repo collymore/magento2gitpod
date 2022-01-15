@@ -30,5 +30,4 @@ n98-magerun2 cache:clean &&
 n98-magerun2 cache:flush &&
 redis-cli flushall &&
 
-echo "Click here and then Open Browser button  --------------------------------------------------------------"
-echo "                                                                                                      |"
+url=$(gp url | awk -F"//" {'print $2'});url+="/";url="https://8002-"$url;cd /workspace/magento2gitpod && php bin/magento setup:install --db-name='nemanja' --db-user='root' --db-password='nem4540' --base-url=$url --backend-frontname='admin' --admin-user='develo' --admin-password='develo*22' --admin-email='luke@develodesign.co.uk' --admin-firstname='Luke' --admin-lastname='Collymore' --use-rewrites='1' --use-secure='1' --base-url-secure=$url --use-secure-admin='1' --language='en_GB' --db-host='127.0.0.1' --cleanup-database --timezone='Europe/London' --currency='GBP' --session-save='redis' --amqp-host="127.0.0.1" --amqp-port="5672" --amqp-user="guest" --amqp-password="guest" --amqp-virtualhost="/"
