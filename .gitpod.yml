@@ -9,6 +9,7 @@ ports:
   visibility: public
 - port: 9200
   name: Elasticsearch
+  description: Elasticsearch
 - port: 15672
   name: RabbitMQ
 vscode:
