@@ -3,9 +3,14 @@ image:
 ports:
 - port: 8002
   visibility: public
+  name: Nginx
 - port: 9001
 - port: 15672
   visibility: public
+- port: 9200
+  name: Elasticsearch
+- port: 15672
+  name: RabbitMQ
 vscode:
   extensions:
     - TabNine.tabnine-vscode@3.4.14
