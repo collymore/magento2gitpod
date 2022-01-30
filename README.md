@@ -141,3 +141,22 @@ https://youtu.be/vbPi8zzZyBk
 **Changelog 2021-12-10:**
 - MailHog SMTP server added to menu.sh and separate as a bash file mailhog.sh
 Please watch video how it works: https://youtu.be/AFOtKNPTY0M
+
+**Changelog 2022-01-02:**
+- Happy New year! Support for PHP 7.3 and xDebug 2.9 added for troubleshooting legacy Magento installations.
+  you can start it from menu.sh or as separate process using file:
+  /workspace/magento2gitpod/switch-php73.sh
+  
+**Changelog 2022-01-09:**
+- Updated m2-install.sh and m2-install-solo.sh files. Added --no-interaction --no-progress to composer require and composer install due magento/magento2#34831
+
+**Changelog 2022-01-15:**
+- Varnish 6 support with Magento configuration/switch. Start/Stop added to menu.sh menu
+  To purge cache you can execute:
+  curl -X 'PURGE' -H'X-Magento-Tags-Pattern: .*' 127.0.0.1
+
+  also, useful to add invalidation to env.php:
+  php bin/magento setup:config:set --http-cache-hosts=127.0.0.1
+
+**Changelog 2022-01-25:**
+- Composer config added to m2-install.sh installation script to fix --no-interaction mode used when installing Magento

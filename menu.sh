@@ -40,10 +40,15 @@ while true; do
     "17" "Stop Tideways service" \
     "18" "Start xDebug service" \
     "19" "Stop xDebug service" \
-    "20" "Start Cron service" \
-    "21" "Install PWA Studio" \
-    "22" "Install CloudBeaver" \
-    "23" "Install MailHog SMTP server" \
+    "20" "Start xDebug 2.9.7 service" \
+    "21" "Stop xDebug 2.9.7 service" \
+    "22" "Start Cron service" \
+    "23" "Install PWA Studio" \
+    "24" "Install CloudBeaver" \
+    "25" "Install MailHog SMTP server" \
+    "26" "Switch to PHP 7.3 CLI+FPM" \
+    "27" "Start and Configure Varnish 6" \
+    "28" "Stop Varnish 6" \
     2>&1 1>&3)
   exit_status=$?
   exec 3>&-
@@ -173,20 +178,84 @@ while true; do
       display_result "xDebug stopped! Press enter to continue ..."
       ;;
     20 )
+      sudo apt-get update;
+      sudo apt-get install -y php7.3-dev;
+      rm -f /etc/php/7.3/mods-available/xdebug.ini &&
+      wget http://xdebug.org/files/xdebug-2.9.7.tgz && tar -xvf xdebug-2.9.7.tgz &&
+      cd xdebug-2.9.7 && phpize && ./configure --with-php-config=/usr/bin/php-config7.3 && make && clear &&
+      result=$(echo "Configuring xDebug PHP settings" &&
+      echo "xdebug.remote_autostart=on" >> /etc/php/7.3/mods-available/xdebug.ini;
+      echo "xdebug.profiler_enable=On" >> /etc/php/7.3/mods-available/xdebug.ini;
+      echo "xdebug.remote_enable=1" >> /etc/php/7.3/mods-available/xdebug.ini;
+      echo "xdebug.remote_port=9003" >> /etc/php/7.3/mods-available/xdebug.ini;
+      echo "xdebug.profiler_output_name = nemanja.log" >> /etc/php/7.3/mods-available/xdebug.ini;
+      echo "xdebug.show_error_trace=On" >> /etc/php/7.3/mods-available/xdebug.ini;
+      echo "xdebug.show_exception_trace=On" >> /etc/php/7.3/mods-available/xdebug.ini;
+      echo "zend_extension=/workspace/magento2gitpod/xdebug-2.9.7/modules/xdebug.so" >> /etc/php/7.3/mods-available/xdebug.ini;
+      ln -s /etc/php/7.3/mods-available/xdebug.ini /etc/php/7.3/fpm/conf.d/20-xdebug.ini;
+      ln -s /etc/php/7.3/mods-available/xdebug.ini /etc/php/7.3/cli/conf.d/20-xdebug.ini;
+      service php7.3-fpm reload;clear)
+      display_result "Services successfully configured and php-fpm restarted! Press enter to continue ..."
+      ;;
+    21 )
+      result=$(echo "Configuring xDebug PHP settings" && echo "xdebug.remote_autostart=off" >> /etc/php/7.3/mods-available/xdebug.ini;
+      echo "xdebug.profiler_enable=Off" >> /etc/php/7.3/mods-available/xdebug.ini;
+      echo "xdebug.remote_enable=0" >> /etc/php/7.3/mods-available/xdebug.ini;
+      echo "xdebug.remote_port=9003" >> /etc/php/7.3/mods-available/xdebug.ini;
+      echo "xdebug.profiler_output_name = nemanja.log" >> /etc/php/7.3/mods-available/xdebug.ini;
+      echo "xdebug.show_error_trace=Off" >> /etc/php/7.3/mods-available/xdebug.ini;
+      echo "xdebug.show_exception_trace=Off" >> /etc/php/7.3/mods-available/xdebug.ini;
+      mv /etc/php/7.3/fpm/conf.d/20-xdebug.ini /etc/php/7.3/fpm/conf.d/20-xdebug.ini-bak;
+      mv /etc/php/7.3/cli/conf.d/20-xdebug.ini /etc/php/7.3/cli/conf.d/20-xdebug.ini-bak;
+      service php7.3-fpm reload;)
+      display_result "xDebug 2.9.7 stopped! Press enter to continue ..."
+      ;;
+    22 )
       result=$(while true; do /usr/bin/php /workspace/magento2gitpod/bin/magento cron:run >> /workspace/magento2gitpod/var/log/cron.log && /usr/bin/php /workspace/magento2gitpod/update/cron.php >> /workspace/magento2gitpod/var/log/cron.log && /usr/bin/php /workspace/magento2gitpod/bin/magento setup:cron:run >> /workspace/magento2gitpod/var/log/cron.log; sleep 60; done &)
       display_result "Magento 2 Cron service started successfully. Press enter to continue ..."
       ;;
-    21 )
+    23 )
       result=$(cd /workspace/magento2gitpod; bash pwa-studio-installer.sh)
       display_result "PWA Studio installed successfully. You can start service with bash /workspace/magento2gitpod/pwa/start.sh & Press enter to continue ..."
       ;;
-    22 )
+    24 )
       cd /workspace/magento2gitpod; bash cloudbeaver.sh;
       display_result "CloudBeaver installed successfully. You can view SQL tool on port 8003. Press enter to continue ..."
       ;;
-    23 )
+    25 )
       cd /workspace/magento2gitpod; bash mailhog.sh;
       display_result "MailHog SMTP server installed successfully. You can view SQL tool on port 8025. Press enter to continue ..."
       ;;
+    26 )
+      cd /workspace/magento2gitpod; bash switch-php73.sh;
+      display_result "Version successfully switched to PHP 7.3 Press enter to continue ..."
+      ;;
+    27 )
+      sudo apt-get update;
+      sudo apt-get install varnish -y;
+      sudo rm -f /etc/varnish;
+      sudo cp /workspace/magento2gitpod/default.vcl /etc/varnish;
+      sudo service nginx stop;
+      sudo ps aux | grep nginx | awk {'print $2'} | xargs kill -s 9;
+      sudo rm -f /etc/nginx/nginx.conf;
+      sudo cp /workspace/magento2gitpod/nginx-varnish.conf /etc/nginx/nginx.conf;
+      n98-magerun2 config:set system/full_page_cache/caching_application 2;
+      n98-magerun2 config:set system/full_page_cache/ttl 86400;
+      n98-magerun2 config:set system/full_page_cache/varnish/backend_host 127.0.0.1;
+      php bin/magento setup:config:set --http-cache-hosts=127.0.0.1;
+      sudo service nginx restart &
+      sudo varnishd -F -T :6082 -t 120 -f /etc/varnish/default.vcl -s file,/etc/varnish/varnish.cache,1024M -p pipe_timeout=7200 -p default_ttl=3600 -p thread_pool_max=1000 -p default_grace=3600 -p vcc_allow_inline_c=on -p thread_pool_min=50 -p workspace_client=512k -p thread_pool_timeout=120 -p http_resp_hdr_len=32k -p feature=+esi_ignore_other_elements &
+      display_result "Varnish 6 successfully configured and started. Press enter to continue ..."
+      ;;
+    28 )
+      sudo service nginx stop;
+      sudo ps aux | grep nginx | awk {'print $2'} | xargs kill -s 9;
+      sudo rm -f /etc/nginx/nginx.conf;
+      sudo cp /workspace/magento2gitpod/nginx.conf /etc/nginx/nginx.conf;
+      n98-magerun2 config:set system/full_page_cache/caching_application 1;
+      n98-magerun2 config:set system/full_page_cache/ttl 86400;
+      sudo service nginx restart &
+      display_result "Varnish 6 successfully stopped. Press enter to continue ..."
+      ;; 
   esac
 done
